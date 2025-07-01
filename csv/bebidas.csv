@@ -1,0 +1,31 @@
+Nombre,Tipo,Calorías,Precio (MXN),Con Alcohol
+Agua natural,Sin alcohol,0,10,No
+Agua mineral,Sin alcohol,0,12,No
+Agua de jamaica,Sin alcohol,60,15,No
+Agua de horchata,Sin alcohol,100,15,No
+Agua de limón,Sin alcohol,70,15,No
+Refresco de cola,Refresco,140,18,No
+Refresco de naranja,Refresco,150,18,No
+Refresco de manzana,Refresco,130,18,No
+Té helado,Té,90,20,No
+Té verde,Té,5,22,No
+Café americano,Café,5,20,No
+Café con leche,Café,80,25,No
+Capuchino,Café,120,30,No
+Latte,Café,150,35,No
+Frappuccino,Café,240,45,No
+Jugo de naranja,Jugo,110,25,No
+Jugo de manzana,Jugo,100,25,No
+Smoothie de fresa,Smoothie,180,35,No
+Smoothie verde,Smoothie,160,35,No
+Leche entera,Lácteo,150,18,No
+Leche deslactosada,Lácteo,130,20,No
+Leche de almendra,Lácteo,80,22,No
+Cerveza clara,Alcohol,150,30,Sí
+Cerveza oscura,Alcohol,180,32,Sí
+Vino tinto,Alcohol,125,60,Sí
+Vino blanco,Alcohol,120,55,Sí
+Tequila,Alcohol,100,70,Sí
+Whisky,Alcohol,110,75,Sí
+Ron,Alcohol,105,65,Sí
+Vodka,Alcohol,100,70,Sí

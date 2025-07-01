@@ -1,0 +1,21 @@
+ID,Nombre,Apellido,Departamento,Puesto,Correo,Salario,Fecha_Ingreso
+1,Ana,Martínez,Recursos Humanos,Analista,a.martinez@empresa.com,18000,2019-03-01
+2,Carlos,López,Tecnología,Desarrollador,c.lopez@empresa.com,24000,2020-07-15
+3,Lucía,García,Marketing,Especialista,l.garcia@empresa.com,21000,2018-09-10
+4,Pedro,Hernández,Finanzas,Contador,p.hernandez@empresa.com,22000,2021-01-20
+5,María,Ramírez,Administración,Recepcionista,m.ramirez@empresa.com,16000,2022-04-25
+6,Jorge,Silva,Tecnología,Soporte Técnico,j.silva@empresa.com,20000,2020-11-30
+7,Sofía,Morales,Recursos Humanos,Reclutadora,s.morales@empresa.com,19000,2019-06-12
+8,Diego,Torres,Marketing,Diseñador,d.torres@empresa.com,20500,2021-08-19
+9,Elena,Gómez,Administración,Asistente,e.gomez@empresa.com,17000,2023-01-03
+10,Andrés,Ruiz,Tecnología,QA Tester,a.ruiz@empresa.com,21500,2021-10-05
+11,Paula,Fernández,Finanzas,Auxiliar,p.fernandez@empresa.com,18000,2020-03-22
+12,Roberto,Soto,Logística,Encargado,r.soto@empresa.com,23000,2018-12-17
+13,Diana,Cruz,Tecnología,Desarrolladora,d.cruz@empresa.com,25000,2019-11-08
+14,Erick,Ramos,Marketing,Analista,e.ramos@empresa.com,21000,2022-06-09
+15,Verónica,Méndez,Finanzas,Supervisora,v.mendez@empresa.com,24000,2017-04-30
+16,Fabián,Castañeda,Recursos Humanos,Gerente,f.castaneda@empresa.com,30000,2016-10-01
+17,Laura,Aguilar,Administración,Secretaria,l.aguilar@empresa.com,16500,2021-02-18
+18,Héctor,Prieto,Logística,Chofer,h.prieto@empresa.com,19000,2022-12-05
+19,Camila,Navarro,Tecnología,Project Manager,c.navarro@empresa.com,28000,2020-05-11
+20,Ricardo,Bravo,Finanzas,Auditor,r.bravo@empresa.com,25000,2019-07-07
