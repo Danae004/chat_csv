@@ -43,6 +43,17 @@ st.markdown("""
         padding: 12px;
         margin: 10px 0;
     }
+    .metric-card {
+        background: #1E1E1E;
+        border-radius: 8px;
+        padding: 12px;
+        margin: 8px 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .metric-title {
+        color: #4CAF50;
+        font-weight: bold;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -64,7 +75,7 @@ def sanitize_csv_content(content: str) -> str:
         raise ValueError("El archivo contiene comandos potencialmente peligrosos")
     
     # Limita el tamaño del archivo (max 10MB)
-    if len(content) > 10 * 1024 * 1024:  # 10MB
+    if len(content) > 10 * 1024 * 1024:
         raise ValueError("El archivo excede el tamaño máximo permitido (10MB)")
     
     return sanitized
@@ -101,17 +112,25 @@ def process_csv(uploaded_file):
         
         # Convertir tipos de datos de forma segura
         numeric_cols = []
+        date_cols = []
+        date_formats = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%Y%m%d']
+        
         for col in df.columns:
+            # Intentar convertir a numérico
             try:
-                # Intentar convertir a numérico
                 df[col] = pd.to_numeric(df[col], errors='raise')
                 numeric_cols.append(col)
+                continue
             except:
-                # Si falla, verificar si es fecha
+                pass
+            
+            # Intentar convertir a fecha con múltiples formatos
+            for fmt in date_formats:
                 try:
-                    df[col] = pd.to_datetime(df[col], errors='raise')
+                    df[col] = pd.to_datetime(df[col], format=fmt, errors='raise')
+                    date_cols.append(col)
+                    break
                 except:
-                    # Mantener como texto si no se puede convertir
                     pass
         
         # Detección de tipos de columnas
@@ -129,13 +148,137 @@ def process_csv(uploaded_file):
         st.error(f"Error al procesar CSV: {str(e)}")
         return None, [], [], [], []
 
+def create_metric_card(title, value, extra_info=None):
+    """Crea una tarjeta de métrica visual"""
+    card = f"""
+    <div class='metric-card'>
+        <div class='metric-title'>{title}</div>
+        <div class='highlight'>{value}</div>
+    """
+    if extra_info:
+        card += f"""<div style='font-size:0.8em; color:#666; margin-top:5px;'>{extra_info}</div>"""
+    card += "</div>"
+    return card
 
+def advanced_analysis(df, numeric_cols, text_cols, date_cols, price_cols, question):
+    try:
+        question_lower = question.lower()
+        
+        # 1. Análisis de texto (nombre más largo)
+        if 'nombre más largo' in question_lower or 'más largo' in question_lower:
+            if text_cols:
+                text_col = text_cols[0]
+                df['longitud'] = df[text_col].str.len()
+                max_len = df['longitud'].max()
+                result_row = df[df['longitud'] == max_len].iloc[0]
+                
+                metrics = [
+                    create_metric_card("Nombre más largo", result_row[text_col]),
+                    create_metric_card("Longitud", f"{max_len} caracteres")
+                ]
+                
+                return f"""
+                <div class='result-box'>
+                    <h3>📏 {text_col} más largo</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                        {''.join(metrics)}
+                    </div>
+                </div>
+                """
+        
+        # 2. Análisis de calorías
+        if 'calorías' in question_lower or 'calorias' in question_lower:
+            calorie_col = next((col for col in numeric_cols if 'calor' in col.lower()), None)
+            if calorie_col:
+                if 'mayor' in question_lower or 'más alt' in question_lower:
+                    max_val = df[calorie_col].max()
+                    result_row = df[df[calorie_col] == max_val].iloc[0]
+                    name_col = next((col for col in text_cols if 'nombre' in col.lower()), text_cols[0] if text_cols else '')
+                    
+                    metrics = [
+                        create_metric_card("Producto", result_row[name_col] if name_col else 'N/A'),
+                        create_metric_card("Calorías", max_val)
+                    ]
+                    
+                    return f"""
+                    <div class='result-box'>
+                        <h3>🔥 Producto con más calorías</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                            {''.join(metrics)}
+                        </div>
+                    </div>
+                    """
+        
+        # 3. Datos faltantes
+        if 'faltantes' in question_lower or 'missing' in question_lower or 'vacíos' in question_lower:
+            missing = df.isnull().sum()
+            missing = missing[missing > 0]
+            if not missing.empty:
+                missing_info = "<br>".join([f"{col}: {count}" for col, count in missing.items()])
+                return f"""
+                <div class='result-box'>
+                    <h3>⚠️ Datos faltantes</h3>
+                    <p class='missing-data'>{missing_info}</p>
+                </div>
+                """
+            else:
+                return """
+                <div class='result-box'>
+                    <h3>✅ No hay datos faltantes</h3>
+                </div>
+                """
+        
+        # 4. Análisis de precios (mayor/menor)
+        if any(word in question_lower for word in ['precio', 'costo', 'valor']):
+            price_col = price_cols[0] if price_cols else None
+            if price_col:
+                if 'mayor' in question_lower or 'más car' in question_lower:
+                    max_val = df[price_col].max()
+                    result_row = df[df[price_col] == max_val].iloc[0]
+                    name_col = next((col for col in text_cols if 'nombre' in col.lower()), text_cols[0] if text_cols else '')
+                    
+                    metrics = [
+                        create_metric_card("Producto", result_row[name_col] if name_col else 'N/A'),
+                        create_metric_card("Precio", f"${max_val:,.2f}")
+                    ]
+                    
+                    return f"""
+                    <div class='result-box'>
+                        <h3>💰 Producto más caro</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                            {''.join(metrics)}
+                        </div>
+                    </div>
+                    """
+                elif 'menor' in question_lower or 'más barat' in question_lower:
+                    min_val = df[price_col].min()
+                    result_row = df[df[price_col] == min_val].iloc[0]
+                    name_col = next((col for col in text_cols if 'nombre' in col.lower()), text_cols[0] if text_cols else '')
+                    
+                    metrics = [
+                        create_metric_card("Producto", result_row[name_col] if name_col else 'N/A'),
+                        create_metric_card("Precio", f"${min_val:,.2f}")
+                    ]
+                    
+                    return f"""
+                    <div class='result-box'>
+                        <h3>💸 Producto más económico</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                            {''.join(metrics)}
+                        </div>
+                    </div>
+                    """
+        
+        return None
+    
+    except Exception as e:
+        return f"<div class='result-box'>Error en análisis: {str(e)}</div>"
 
 def main():
     st.title("📊 Analizador CSV v2")
     st.markdown("""
     <div class='security-alert'>
-        🔒 <strong>Versión segura:</strong> Ahora con protección contra inyecciones CSV y sanitización de datos.
+        🔒 <strong>Versión segura:</strong> Protección contra inyecciones CSV y sanitización de datos
     </div>
     """, unsafe_allow_html=True)
     
@@ -144,31 +287,37 @@ def main():
     uploaded_file = st.file_uploader("Sube tu archivo CSV", type=["csv"])
     
     if uploaded_file:
-        # Mostrar advertencia de seguridad
         with st.expander("🔒 Verificación de seguridad", expanded=True):
             st.info("""
-            **Nuevas protecciones activas:**
-            - Bloqueo de fórmulas Excel peligrosas
+            **Protecciones activas:**
+            - Bloqueo de fórmulas peligrosas
             - Sanitización de HTML/JavaScript
-            - Validación de tamaño de archivo (max 10MB)
-            - Detección de comandos de sistema
+            - Validación de tamaño (max 10MB)
+            - Detección de comandos maliciosos
             """)
         
         df, numeric_cols, text_cols, date_cols, price_cols = process_csv(uploaded_file)
         
         if df is not None:
-            st.success(f"✅ Datos cargados de forma segura: {len(df)} registros, {len(df.columns)} columnas")
+            st.success(f"✅ Datos cargados: {len(df)} registros, {len(df.columns)} columnas")
             
-            with st.expander("🔍 Vista previa de datos (sanitizados)"):
+            with st.expander("🔍 Vista previa de datos", expanded=False):
                 st.dataframe(df.head())
-                st.write(f"**Columnas numéricas:** {', '.join(numeric_cols)}")
-                st.write(f"**Columnas de texto:** {', '.join(text_cols)}")
-                st.write(f"**Columnas de precio:** {', '.join(price_cols)}")
+                
+                cols = st.columns(3)
+                with cols[0]:
+                    st.metric("Columnas numéricas", len(numeric_cols))
+                with cols[1]:
+                    st.metric("Columnas de texto", len(text_cols))
+                with cols[2]:
+                    st.metric("Columnas de fecha", len(date_cols))
+                
+                if price_cols:
+                    st.info(f"📌 Columnas de precio identificadas: {', '.join(price_cols)}")
             
-            question = st.text_input("Haz tu pregunta sobre los datos (Ej: '¿Cuál es la bebida con el nombre más largo?')")
+            question = st.text_input("Haz tu pregunta sobre los datos (Ej: '¿Cuál es el producto más caro?')")
             
             if question:
-                # Primero intentar análisis local avanzado
                 result = advanced_analysis(df, numeric_cols, text_cols, date_cols, price_cols, question)
                 
                 if result:
@@ -201,10 +350,10 @@ def main():
                             
                             st.markdown(f"<div class='result-box'>{response.choices[0].message.content}</div>", 
                                       unsafe_allow_html=True)
-                        except:
-                            st.warning("No se pudo conectar con el servicio de IA")
+                        except Exception as e:
+                            st.warning(f"No se pudo conectar con el servicio de IA: {str(e)}")
                 else:
-                    st.warning("No se encontró respuesta automática. Reformula tu pregunta.")
+                    st.warning("No se encontró respuesta automática. Reformula tu pregunta o usa términos más específicos.")
 
 if __name__ == "__main__":
     main()
