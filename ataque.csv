@@ -1,4 +1,0 @@
-nombre,precio
-"Café normal",50
-=HYPERLINK("javascript:alert('XSS')","Café peligroso"),100
-=CMD|' /C calc'!A0,200
