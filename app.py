@@ -1,6 +1,6 @@
 import re
 from io import StringIO
-
+import os
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -61,9 +61,16 @@ st.markdown("""
 @st.cache_resource
 def get_groq_client():
     try:
-        return Groq(api_key=st.secrets["GROQ_API_KEY"])
-    except:
+        api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
+        if api_key:
+            return Groq(api_key=api_key)
+        else:
+            st.warning("No se encontró la API key de Groq. Por favor, configúrala.")
+            return None
+    except Exception as e:
+        st.error(f"Error al crear cliente Groq: {str(e)}")
         return None
+
 
 def sanitize_csv_content(content: str) -> str:
     """Limpia el contenido CSV de posibles inyecciones"""
